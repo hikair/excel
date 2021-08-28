@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>导入</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- import Vue before Element -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui@2.15.1/lib/index.js"></script>
+</head>
+<body>
+
+
+<div id="app">
+    <el-row :gutter="20">
+        <!------------------------操作区域------------------------>
+        <el-col :span="6" :offset="6">
+            <el-card class="box-card">
+                <div slot="header" class="clearfix">
+                    <span>数据库操作</span>
+                </div>
+                <el-form :model="form" label-width="80px">
+                    <el-form-item label="表名">
+                        <el-input placeholder="请输入表名" v-model="form.tableName" clearable></el-input>
+                    </el-form-item>
+                </el-form>
+
+                <el-form :model="form" label-width="80px">
+                    <el-form-item label="数据库">
+                        <el-select v-model="form.dbType" style="width: 100%">
+                            <el-option label="mysql" value="mysql"></el-option>
+                            <el-option label="oracle" value="oracle"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-form>
+
+                <el-form :model="form" label-width="80px">
+                    <el-form-item label="操作">
+                        <el-col :span="19" style="padding-left: 0px">
+                            <el-select v-model="form.operate" style="width: 100%">
+                                <el-option label="新增" value="1"></el-option>
+                                <el-option label="修改" value="2"></el-option>
+                            </el-select>
+                        </el-col>
+                        <el-col :span="5" style="padding-left: 0px">
+                            <el-tooltip class="item" effect="dark" placement="right">
+                                <div slot="content">
+                                    <ol>
+                                        <li>表格默认第一行为数据库对应字段名</li>
+                                        <li>新增时，表格第一列字段名若包含id，默认自动生成</li>
+                                        <li>修改时，默认根据第一列修改其他列，确保第一列为主键</li>
+                                    </ol>
+                                </div>
+                                <el-button>说明</el-button>
+                            </el-tooltip>
+                        </el-col>
+                    </el-form-item>
+                </el-form>
+
+                <el-form label-width="80px">
+                    <el-form-item>
+                        <!-- accept表示可上传的文件类型；show-file-list表示是否显示上传文件名，为true时配合file-list存在一个数组里
+                            :limit表示最大上传文件数量，配合:on-exceed超出时的方法；  :data表示上传文件携带的其他数据
+                            auto-upload为true时表示点击一个el-button后就触发提交，为false取消自动提交，此时需要加个ref，在el-button加个点击事件来提交 -->
+                        <el-upload class="avatar-uploader" :action="requestUrl" :auto-upload="false" ref="upload"
+                                   accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                                   :limit="1" :on-exceed="handleExceed"
+                                   :show-file-list="true" :before-upload="beforeAvatarUpload" :on-progress="uploading"
+                                   :on-success="importSuccess" :on-error="importError" :file-list="files" :data="form">
+                            <el-button slot="trigger" size="small" type="primary">选择文件</el-button>
+                            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传</el-button>
+                        </el-upload>
+                    </el-form-item>
+                </el-form>
+            </el-card>
+        </el-col>
+    </el-row>
+
+
+</div>
+</body>
+
+
+<script>
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                // 文件上传请求地址
+                requestUrl: 'importData',
+                form: {
+                    // excel要新增或修改的表名
+                    tableName: '',
+                    // 对表的操作
+                    operate: '1',
+                    dbType: 'mysql'
+                },
+                // 文件上传存储的文件名
+                files: []
+            }
+        },
+        methods: {
+            beforeAvatarUpload(file) {
+
+
+            },
+            uploading() {
+                this.loading = true;
+            },
+            // 上传文件超出预定数量的执行方法
+            handleExceed() {
+                this.$message({
+                    message: '仅支持上传一个文件',
+                    type: 'info'
+                });
+            },
+            // 手动触发上传
+            submitUpload() {
+                this.$refs.upload.submit();
+            },
+            // 导入成功执行方法
+            importSuccess(res) {
+                debugger;
+                if(res.code) {
+                    this.$message({
+                        message: res.msg,
+                        type: 'error'
+                    });
+                }else {
+                    this.$message({
+                        message: res.data,
+                        type: 'success'
+                    });
+                }
+                // 上传完毕后清空文件显示
+                this.files = [];
+            },
+            // 导入失败执行方法
+            importError(err) {
+                this.files = [];
+            },
+        }
+    })
+</script>
+</html>
